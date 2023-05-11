@@ -1,9 +1,11 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	api "github.com/ipfs/go-ipfs-api"
 	"os"
+	"strconv"
 	"sync"
 	"time"
 )
@@ -11,58 +13,53 @@ import (
 var wg sync.WaitGroup
 
 func main() {
-	keys := []string{"k51qzi5uqu5dgygf5hcjp8m7jyj0pkyhms2xv31x5rfy910gnppdai8boegm7l"}
+	var keys []string
 
 	// Create a shell to the local node
 	sh := api.NewLocalShell()
 
-	// Obtain the local IPFS node's keypair ID (default is "self")
-	//keyID := "self"
+	ctx := context.Background()
 
-	//ctx := context.Background()
+	machine := os.Args[1]
+	nrMachines, _ := strconv.Atoi(os.Args[2])
+
+	for i := 1; i <= nrMachines; i++ {
+		fileName := "key" + string(i) + ".key"
+		file, err := os.Open(fileName)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		err = sh.KeyImport(ctx, string(i), file)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
+
+	keyList, _ := sh.KeyList(ctx)
+	fmt.Println(keyList)
+
+	for _, key:= range keyList {
+		if key.Name != machine {
+			keys = append(keys, key.Id)
+			sh.KeyRm(ctx, key.Name)
+			fmt.Println("Removed key: ", key.Name)
+		}
+	}
+
+	fmt.Println(keys)
 
 	wg.Add(2)
 
 	go allResolves(sh, keys)
 
-	go publish(sh)
+	go publish(sh, machine)
 
 	wg.Wait()
 
-	/**
-		//fazer um for para cada chave dá resolve e fazer um for tmb para o publish
-		file, err := os.OpenFile("/Users/vale/hello.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-		cid, err := sh.Add(bufio.NewReader(file))
-		if err != nil {
-			fmt.Printf("error adding file: %s", err)
-		}
-
-		lifetime, err := time.ParseDuration("24h")
-		if err != nil {
-			fmt.Errorf("failed to parse lifetime: %w", err)
-		}
-		ttl, err := time.ParseDuration("1ns")
-
-		//key2, err := sh.KeyGen(ctx, "1")
-
-		// Publish the IPNS record using the default keypair
-		ipnsEntry, err := sh.PublishWithDetails(cid, "2", lifetime, ttl, false)
-		if err != nil {
-			fmt.Errorf("failed to publish IPNS record: %w", err)
-		}
-
-		fmt.Println("Published", ipnsEntry.Name)
-
-		sh.Resolve("k51qzi5uqu5dk2z33rmgr0ynsntwsoyudfge15ej7u9y3a67gcmwi9ksikbugm")
-		//sh.Unpin(cid)
-	**/
 }
 
-func publish(sh *api.Shell) {
+func publish(sh *api.Shell, key string) {
 	counter := 0
 	for {
 		file, err := os.OpenFile("test.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
@@ -96,10 +93,10 @@ func publish(sh *api.Shell) {
 		}
 
 		//so we dont have cache
-		ttl, err := time.ParseDuration("1ns")
+		ttl, err := time.ParseDuration("0ns")
 
 		// Publish the IPNS record using the default keypair
-		ipnsEntry, err := sh.PublishWithDetails(cid, "self", lifetime, ttl, false)
+		ipnsEntry, err := sh.PublishWithDetails(cid, key, lifetime, ttl, false)
 		if err != nil {
 			fmt.Errorf("failed to publish IPNS record: %w", err)
 		}
@@ -111,6 +108,7 @@ func publish(sh *api.Shell) {
 
 		//After the time, unpin the file so that it can be garbage collected
 		sh.Unpin(cid)
+
 	}
 
 }
