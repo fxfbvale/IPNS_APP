@@ -1,11 +1,9 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	api "github.com/ipfs/go-ipfs-api"
 	"os"
-	"strconv"
 	"sync"
 	"time"
 )
@@ -13,53 +11,22 @@ import (
 var wg sync.WaitGroup
 
 func main() {
-	var keys []string
+	keys := []string{}
 
 	// Create a shell to the local node
 	sh := api.NewLocalShell()
-
-	ctx := context.Background()
-
-	machine := os.Args[1]
-	nrMachines, _ := strconv.Atoi(os.Args[2])
-
-	for i := 1; i <= nrMachines; i++ {
-		fileName := "key" + string(i) + ".key"
-		file, err := os.Open(fileName)
-		if err != nil {
-			fmt.Println(err)
-		}
-
-		err = sh.KeyImport(ctx, string(i), file)
-		if err != nil {
-			fmt.Println(err)
-		}
-	}
-
-	keyList, _ := sh.KeyList(ctx)
-	fmt.Println(keyList)
-
-	for _, key:= range keyList {
-		if key.Name != machine {
-			keys = append(keys, key.Id)
-			sh.KeyRm(ctx, key.Name)
-			fmt.Println("Removed key: ", key.Name)
-		}
-	}
-
-	fmt.Println(keys)
 
 	wg.Add(2)
 
 	go allResolves(sh, keys)
 
-	go publish(sh, machine)
+	go publish(sh)
 
 	wg.Wait()
 
 }
 
-func publish(sh *api.Shell, key string) {
+func publish(sh *api.Shell) {
 	counter := 0
 	for {
 		file, err := os.OpenFile("test.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
@@ -96,12 +63,12 @@ func publish(sh *api.Shell, key string) {
 		ttl, err := time.ParseDuration("0ns")
 
 		// Publish the IPNS record using the default keypair
-		ipnsEntry, err := sh.PublishWithDetails(cid, key, lifetime, ttl, false)
+		ipnsEntry, err := sh.PublishWithDetails(cid, "self", lifetime, ttl, false)
 		if err != nil {
 			fmt.Errorf("failed to publish IPNS record: %w", err)
 		}
 
-		fmt.Println("Published", ipnsEntry.Name)
+		fmt.Println("Published", ipnsEntry)
 
 		//waits for the next republish
 		time.Sleep(3 * time.Minute)
@@ -121,7 +88,7 @@ func resolve(sh *api.Shell, key string) {
 			ipfsPath, err := sh.Resolve(key)
 
 			if err != nil {
-				fmt.Errorf("failed to resolve IPNS record: %w, %", ipfsPath)
+				fmt.Errorf("failed to resolve IPNS record: %s", ipfsPath)
 			}
 
 			//waits 30 seconds to make each resolve
