@@ -2,8 +2,6 @@ module IPNS_APP
 
 go 1.20
 
-replace github.com/ipfs/kubo => ../Kubo/kubo
-
 require github.com/ipfs/go-ipfs-api v0.6.0
 
 require (

@@ -11,7 +11,7 @@ import (
 var wg sync.WaitGroup
 
 func main() {
-	keys := []string{"k51qzi5uqu5dj3xj5gww5ahtyvnl9ltm5zx2gdatfrl67iglzj8ovifpiurbfh"}
+	keys := []string{"k51qzi5uqu5dgygf5hcjp8m7jyj0pkyhms2xv31x5rfy910gnppdai8boegm7l"}
 
 	// Create a shell to the local node
 	sh := api.NewLocalShell()
@@ -96,7 +96,7 @@ func publish(sh *api.Shell) {
 		}
 
 		//so we dont have cache
-		ttl, err := time.ParseDuration("0ns")
+		ttl, err := time.ParseDuration("1ns")
 
 		// Publish the IPNS record using the default keypair
 		ipnsEntry, err := sh.PublishWithDetails(cid, "self", lifetime, ttl, false)
@@ -107,7 +107,7 @@ func publish(sh *api.Shell) {
 		fmt.Println("Published", ipnsEntry.Name)
 
 		//waits for the next republish
-		time.Sleep(30 * time.Second)
+		time.Sleep(3 * time.Minute)
 
 		//After the time, unpin the file so that it can be garbage collected
 		sh.Unpin(cid)
@@ -117,12 +117,19 @@ func publish(sh *api.Shell) {
 
 func resolve(sh *api.Shell, key string) {
 	for {
-		// Resolve the IPNS record to a valid IPFS path
-		ipfsPath, err := sh.Resolve(key)
 
-		if err != nil {
-			fmt.Errorf("failed to resolve IPNS record: %w, %", ipfsPath)
-		}
+		go func() {
+			// Resolve the IPNS record to a valid IPFS path
+			ipfsPath, err := sh.Resolve(key)
+
+			if err != nil {
+				fmt.Errorf("failed to resolve IPNS record: %w, %", ipfsPath)
+			}
+
+			//waits 30 seconds to make each resolve
+			time.Sleep(30 * time.Second)
+		}()
+
 	}
 }
 
