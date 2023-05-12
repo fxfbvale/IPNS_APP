@@ -24,6 +24,28 @@ func main() {
 	machine := os.Args[1]
 	nrMachines, _ := strconv.Atoi(os.Args[2])
 
+	sleep := time.Minute
+	switch os.Args[3] {
+	case "5m":
+		sleep = 5 * time.Minute
+	case "15m":
+		sleep = 15 * time.Minute
+	case "30m":
+		sleep = 30 * time.Minute
+	case "1h":
+		sleep = time.Hour
+	case "2h":
+		sleep = 2 * time.Hour
+	case "3h":
+		sleep = 3 * time.Hour
+	case "6h":
+		sleep = 6 * time.Hour
+	case "12h":
+		sleep = 12 * time.Hour
+	default:
+		os.Exit(1)
+	}
+
 	for i := 1; i <= nrMachines; i++ {
 		fileName := fmt.Sprintf("pre%d.key", i)
 		file, err := os.Open(fileName)
@@ -54,13 +76,13 @@ func main() {
 
 	go allResolves(sh, keys)
 
-	go publish(sh)
+	go publish(sh, sleep)
 
 	wg.Wait()
 
 }
 
-func publish(sh *api.Shell) {
+func publish(sh *api.Shell, sleep time.Duration) {
 	counter := 0
 	for {
 		file, err := os.OpenFile("file.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
@@ -111,7 +133,7 @@ func publish(sh *api.Shell) {
 		fmt.Println("Published", ipnsEntry)
 
 		//waits for the next republish
-		time.Sleep(3 * time.Minute)
+		time.Sleep(sleep)
 
 		//After the time, unpin the file so that it can be garbage collected
 		sh.Unpin(cid)
