@@ -76,13 +76,13 @@ func main() {
 
 	go allResolves(sh, keys)
 
-	go publish(sh, sleep)
+	go publish(sh, sleep, machine)
 
 	wg.Wait()
 
 }
 
-func publish(sh *api.Shell, sleep time.Duration) {
+func publish(sh *api.Shell, sleep time.Duration, machine string) {
 	counter := 0
 	for {
 		file, err := os.OpenFile("file.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
@@ -125,7 +125,7 @@ func publish(sh *api.Shell, sleep time.Duration) {
 		}
 
 		// Publish the IPNS record using the default keypair
-		ipnsEntry, err := sh.PublishWithDetails(cid, "self", lifetime, ttl, false)
+		ipnsEntry, err := sh.PublishWithDetails(cid, machine, lifetime, ttl, false)
 		if err != nil {
 			fmt.Errorf("failed to publish IPNS record: %w", err)
 		}
@@ -146,7 +146,7 @@ func resolve(sh *api.Shell, key string) {
 	for {
 		go func() {
 			// Resolve the IPNS record to a valid IPFS path
-			ipfsPath, err := sh.Resolve(key)
+			ipfsPath, err := sh.ResolvePath().Resolve(key)
 
 			if err != nil {
 				fmt.Errorf("failed to resolve IPNS record: %s", ipfsPath)
