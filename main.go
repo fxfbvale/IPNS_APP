@@ -24,13 +24,13 @@ func main() {
 	nrMachines, _ := strconv.Atoi(os.Args[2])
 
 	for i := 1; i <= nrMachines; i++ {
-		fileName := "key" + string(i) + ".key"
+		fileName := fmt.Sprintf("key%d.key", i)
 		file, err := os.Open(fileName)
 		if err != nil {
 			fmt.Println(err)
 		}
 
-		err = sh.KeyImport(ctx, string(i), file)
+		err = sh.KeyImport(ctx, strconv.Itoa(i), file)
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -39,8 +39,8 @@ func main() {
 	keyList, _ := sh.KeyList(ctx)
 	fmt.Println(keyList)
 
-	for _, key:= range keyList {
-		if key.Name != machine {
+	for _, key := range keyList {
+		if key.Name != machine && key.Name != "self" {
 			keys = append(keys, key.Id)
 			sh.KeyRm(ctx, key.Name)
 			fmt.Println("Removed key: ", key.Name)
@@ -62,7 +62,7 @@ func main() {
 func publish(sh *api.Shell, key string) {
 	counter := 0
 	for {
-		file, err := os.OpenFile("test.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+		file, err := os.OpenFile("file.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
@@ -76,7 +76,7 @@ func publish(sh *api.Shell, key string) {
 			fmt.Println(err)
 		}
 
-		file, err = os.OpenFile("test.txt", os.O_APPEND|os.O_CREATE|os.O_RDONLY, 0666)
+		file, err = os.OpenFile("file.txt", os.O_APPEND|os.O_CREATE|os.O_RDONLY, 0666)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
@@ -93,7 +93,10 @@ func publish(sh *api.Shell, key string) {
 		}
 
 		//so we dont have cache
-		ttl, err := time.ParseDuration("0ns")
+		ttl, err := time.ParseDuration("1ns")
+		if err != nil {
+			fmt.Errorf("failed to parse ttl: %w", err)
+		}
 
 		// Publish the IPNS record using the default keypair
 		ipnsEntry, err := sh.PublishWithDetails(cid, key, lifetime, ttl, false)
@@ -121,12 +124,12 @@ func resolve(sh *api.Shell, key string) {
 			ipfsPath, err := sh.Resolve(key)
 
 			if err != nil {
-				fmt.Errorf("failed to resolve IPNS record: %w, %", ipfsPath)
+				fmt.Errorf("failed to resolve IPNS record: %s", ipfsPath)
 			}
-
-			//waits 30 seconds to make each resolve
-			time.Sleep(30 * time.Second)
 		}()
+
+		//waits 30 seconds to make each resolve
+		time.Sleep(30 * time.Second)
 
 	}
 }
