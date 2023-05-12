@@ -1,9 +1,11 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	api "github.com/ipfs/go-ipfs-api"
 	"os"
+	"strconv"
 	"sync"
 	"time"
 )
@@ -11,20 +13,12 @@ import (
 var wg sync.WaitGroup
 
 func main() {
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-	var keys []string
-=======
-	keys := []string{"k51qzi5uqu5dhik8264cqz1ilkbuzy61nvnwoyfp4wnr0gbwp02ddrdqpitfdv"}
->>>>>>> Stashed changes
-=======
+
 	keys := []string{}
->>>>>>> master
 
 	// Create a shell to the local node
 	sh := api.NewLocalShell()
 
-<<<<<<< HEAD
 	ctx := context.Background()
 
 	machine := os.Args[1]
@@ -56,8 +50,6 @@ func main() {
 
 	fmt.Println(keys)
 
-=======
->>>>>>> master
 	wg.Add(2)
 
 	go allResolves(sh, keys)
@@ -137,18 +129,10 @@ func resolve(sh *api.Shell, key string) {
 			if err != nil {
 				fmt.Errorf("failed to resolve IPNS record: %s", ipfsPath)
 			}
-<<<<<<< Updated upstream
-		}()
 
+		}()
 		//waits 30 seconds to make each resolve
 		time.Sleep(30 * time.Second)
-
-=======
-
-			//waits 30 seconds to make each resolve
-		}()
-		time.Sleep(30 * time.Second)
->>>>>>> Stashed changes
 	}
 }
 
