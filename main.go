@@ -25,7 +25,7 @@ func main() {
 	nrMachines, _ := strconv.Atoi(os.Args[2])
 
 	for i := 1; i <= nrMachines; i++ {
-		fileName := fmt.Sprintf("key%d.key", i)
+		fileName := fmt.Sprintf("pre%d.key", i)
 		file, err := os.Open(fileName)
 		if err != nil {
 			fmt.Println(err)
