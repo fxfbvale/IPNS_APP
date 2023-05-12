@@ -1,11 +1,9 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	api "github.com/ipfs/go-ipfs-api"
 	"os"
-	"strconv"
 	"sync"
 	"time"
 )
@@ -13,15 +11,20 @@ import (
 var wg sync.WaitGroup
 
 func main() {
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 	var keys []string
 =======
 	keys := []string{"k51qzi5uqu5dhik8264cqz1ilkbuzy61nvnwoyfp4wnr0gbwp02ddrdqpitfdv"}
 >>>>>>> Stashed changes
+=======
+	keys := []string{}
+>>>>>>> master
 
 	// Create a shell to the local node
 	sh := api.NewLocalShell()
 
+<<<<<<< HEAD
 	ctx := context.Background()
 
 	machine := os.Args[1]
@@ -53,17 +56,19 @@ func main() {
 
 	fmt.Println(keys)
 
+=======
+>>>>>>> master
 	wg.Add(2)
 
 	go allResolves(sh, keys)
 
-	go publish(sh, machine)
+	go publish(sh)
 
 	wg.Wait()
 
 }
 
-func publish(sh *api.Shell, key string) {
+func publish(sh *api.Shell) {
 	counter := 0
 	for {
 		file, err := os.OpenFile("file.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
@@ -106,12 +111,12 @@ func publish(sh *api.Shell, key string) {
 		}
 
 		// Publish the IPNS record using the default keypair
-		ipnsEntry, err := sh.PublishWithDetails(cid, key, lifetime, ttl, false)
+		ipnsEntry, err := sh.PublishWithDetails(cid, "self", lifetime, ttl, false)
 		if err != nil {
 			fmt.Errorf("failed to publish IPNS record: %w", err)
 		}
 
-		fmt.Println("Published", ipnsEntry.Name)
+		fmt.Println("Published", ipnsEntry)
 
 		//waits for the next republish
 		time.Sleep(3 * time.Minute)
