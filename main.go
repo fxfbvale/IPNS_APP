@@ -146,7 +146,7 @@ func resolve(sh *api.Shell, key string) {
 	for {
 		go func() {
 			// Resolve the IPNS record to a valid IPFS path
-			ipfsPath, err := sh.ResolvePath().Resolve(key)
+			ipfsPath, err := sh.Resolve(key)
 
 			if err != nil {
 				fmt.Errorf("failed to resolve IPNS record: %s", ipfsPath)
