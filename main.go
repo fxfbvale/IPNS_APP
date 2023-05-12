@@ -13,7 +13,11 @@ import (
 var wg sync.WaitGroup
 
 func main() {
+<<<<<<< Updated upstream
 	var keys []string
+=======
+	keys := []string{"k51qzi5uqu5dhik8264cqz1ilkbuzy61nvnwoyfp4wnr0gbwp02ddrdqpitfdv"}
+>>>>>>> Stashed changes
 
 	// Create a shell to the local node
 	sh := api.NewLocalShell()
@@ -75,6 +79,7 @@ func publish(sh *api.Shell, key string) {
 		if err != nil {
 			fmt.Println(err)
 		}
+		file.Close()
 
 		file, err = os.OpenFile("file.txt", os.O_APPEND|os.O_CREATE|os.O_RDONLY, 0666)
 		if err != nil {
@@ -86,6 +91,8 @@ func publish(sh *api.Shell, key string) {
 		if err != nil {
 			fmt.Printf("error adding file: %s", err)
 		}
+
+		file.Close()
 
 		lifetime, err := time.ParseDuration("24h")
 		if err != nil {
@@ -118,7 +125,6 @@ func publish(sh *api.Shell, key string) {
 
 func resolve(sh *api.Shell, key string) {
 	for {
-
 		go func() {
 			// Resolve the IPNS record to a valid IPFS path
 			ipfsPath, err := sh.Resolve(key)
@@ -126,11 +132,18 @@ func resolve(sh *api.Shell, key string) {
 			if err != nil {
 				fmt.Errorf("failed to resolve IPNS record: %s", ipfsPath)
 			}
+<<<<<<< Updated upstream
 		}()
 
 		//waits 30 seconds to make each resolve
 		time.Sleep(30 * time.Second)
 
+=======
+
+			//waits 30 seconds to make each resolve
+		}()
+		time.Sleep(30 * time.Second)
+>>>>>>> Stashed changes
 	}
 }
 
