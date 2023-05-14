@@ -47,7 +47,7 @@ func main() {
 	}
 
 	for i := 1; i <= nrMachines; i++ {
-		fileName := fmt.Sprintf("pre%d.key", i)
+		fileName := fmt.Sprintf("key%d.key", i)
 		file, err := os.Open(fileName)
 		if err != nil {
 			fmt.Println(err)
@@ -125,12 +125,10 @@ func publish(sh *api.Shell, sleep time.Duration, machine string) {
 		}
 
 		// Publish the IPNS record using the default keypair
-		ipnsEntry, err := sh.PublishWithDetails(cid, machine, lifetime, ttl, false)
+		_, err = sh.PublishWithDetails(cid, machine, lifetime, ttl, false)
 		if err != nil {
 			fmt.Errorf("failed to publish IPNS record: %w", err)
 		}
-
-		fmt.Println("Published", ipnsEntry)
 
 		//waits for the next republish
 		time.Sleep(sleep)
