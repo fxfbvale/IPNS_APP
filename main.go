@@ -151,6 +151,7 @@ func resolve(sh *api.Shell, key string) {
 			}
 
 		}()
+		
 		//waits 30 seconds to make each resolve
 		time.Sleep(30 * time.Second)
 	}
